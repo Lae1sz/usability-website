@@ -1,0 +1,487 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Fahrtwind Registrierung</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap">
+<style>
+/* Layout: eine schmale App-Karte, mittig wie ein echter Registrierungsscreen; Marke oben, Demo-Hinweis unten */
+:root {
+  --bg: #EDF2EF;
+  --surface: #FFFFFF;
+  --fg: #17221E;
+  --muted: #56675F;
+  --line: #CFDAD4;
+  --accent: #0E6B57;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #DDEEE8;
+  --error: #B42318;
+  --error-soft: #FDECEA;
+  --ok: #1E7A4B;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1412; --surface: #16201C; --fg: #E4EDE9; --muted: #98AAA2; --line: #2A3732;
+    --accent: #3FBF9B; --accent-ink: #062219; --accent-soft: #1B322A;
+    --error: #F7836F; --error-soft: #3A1B17; --ok: #52D99A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1412; --surface: #16201C; --fg: #E4EDE9; --muted: #98AAA2; --line: #2A3732;
+  --accent: #3FBF9B; --accent-ink: #062219; --accent-soft: #1B322A;
+  --error: #F7836F; --error-soft: #3A1B17; --ok: #52D99A;
+  color-scheme: dark;
+}
+
+html, body { min-height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.5;
+  padding-block: 32px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 440px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand svg { flex: none; }
+.brand-name { font-family: var(--display); font-weight: 700; font-size: 1.35rem; letter-spacing: -0.01em; line-height: 1.1; }
+.brand-sub { color: var(--muted); font-size: 0.875rem; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 28px 24px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+h1 { font-family: var(--display); font-weight: 700; font-size: 1.75rem; line-height: 1.15; letter-spacing: -0.015em; margin: 0; text-wrap: balance; }
+.lead { margin: -8px 0 0; color: var(--muted); }
+
+form { display: flex; flex-direction: column; gap: 18px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+label.lbl { font-weight: 600; font-size: 0.9375rem; }
+.opt { color: var(--muted); font-weight: 400; }
+.input-row { position: relative; display: flex; }
+input[type="text"], input[type="email"], input[type="password"] {
+  width: 100%;
+  font: inherit;
+  color: var(--fg);
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  min-height: 48px;
+  transition: border-color .15s, box-shadow .15s;
+}
+input::placeholder { color: var(--muted); opacity: .7; }
+input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.field.invalid input[type="text"], .field.invalid input[type="email"], .field.invalid input[type="password"] { border-color: var(--error); }
+.field.invalid input:focus { box-shadow: 0 0 0 3px var(--error-soft); }
+.field.valid input { border-color: var(--ok); }
+.has-toggle input { padding-right: 104px; }
+.toggle {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  font: inherit; font-size: 0.875rem; font-weight: 600;
+  color: var(--accent); background: transparent; border: 0; border-radius: 8px;
+  padding: 8px 10px; cursor: pointer;
+}
+.toggle:hover { background: var(--accent-soft); }
+.toggle:focus-visible, .linkish:focus-visible, .btn:focus-visible, .summary button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.err { margin: 0; color: var(--error); font-size: 0.875rem; font-weight: 500; display: flex; gap: 6px; align-items: flex-start; }
+.err::before { content: "!"; flex: none; width: 16px; height: 16px; margin-top: 2px; border-radius: 50%; background: var(--error); color: var(--surface); font-size: 11px; font-weight: 700; display: grid; place-items: center; line-height: 1; }
+.hint { margin: 0; color: var(--muted); font-size: 0.875rem; }
+
+.rules { list-style: none; margin: 2px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.8125rem; color: var(--muted); }
+.rules li { display: flex; align-items: center; gap: 6px; }
+.rules li::before { content: ""; width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--line); box-sizing: border-box; flex: none; }
+.rules li.met { color: var(--ok); }
+.rules li.met::before { border: 0; background: var(--ok) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M3.5 7.2l2.3 2.2 4.7-4.8' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat; }
+
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 0.9375rem; }
+.check input { width: 20px; height: 20px; margin: 2px 0 0; flex: none; accent-color: var(--accent); cursor: pointer; }
+.check label { cursor: pointer; }
+.field.invalid .check input { outline: 2px solid var(--error); outline-offset: 1px; border-radius: 4px; }
+.linkish { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; border-radius: 3px; }
+.terms { background: var(--accent-soft); border-radius: 10px; padding: 12px 14px; font-size: 0.875rem; color: var(--fg); }
+.terms p { margin: 0 0 6px; }
+.terms p:last-child { margin: 0; }
+
+.btn {
+  font: inherit; font-weight: 600; font-size: 1rem;
+  min-height: 52px; border-radius: 12px; border: 0; cursor: pointer;
+  background: var(--accent); color: var(--accent-ink);
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  transition: filter .15s, transform .1s;
+}
+.btn:hover { filter: brightness(1.07); }
+.btn:active { transform: translateY(1px); }
+.btn[disabled] { cursor: progress; filter: saturate(.7); }
+.btn.secondary { background: transparent; color: var(--accent); border: 1.5px solid var(--line); }
+.spinner { width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid currentColor; border-right-color: transparent; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.summary { border: 1.5px solid var(--error); background: var(--error-soft); border-radius: 12px; padding: 14px 16px; }
+.summary strong { display: block; margin-bottom: 4px; }
+.summary ul { margin: 0; padding-left: 18px; }
+.summary button { font: inherit; color: var(--error); background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; text-align: left; }
+
+.foot { margin: 0; text-align: center; color: var(--muted); font-size: 0.9375rem; }
+.note { margin: 6px 0 0; font-size: 0.8125rem; color: var(--muted); text-align: center; }
+
+.done-icon { width: 56px; height: 56px; border-radius: 50%; background: var(--accent-soft); display: grid; place-items: center; }
+.done-text { margin: -6px 0 0; color: var(--muted); overflow-wrap: anywhere; }
+.done-text strong { color: var(--fg); }
+
+.metrics { border-top: 1px dashed var(--line); padding-top: 18px; display: flex; flex-direction: column; gap: 12px; }
+.metrics h2 { margin: 0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.metrics dl { margin: 0; display: grid; grid-template-columns: 1fr auto; gap: 8px 16px; font-size: 0.9375rem; }
+.metrics dt { color: var(--muted); }
+.metrics dd { margin: 0; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.metrics-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.metrics-actions .btn { flex: 1 1 160px; min-height: 44px; font-size: 0.9375rem; }
+.code-lead { margin: 0; }
+.code-row { display: flex; flex-wrap: wrap; gap: 10px; }
+#codeField {
+  flex: 1 1 180px; min-width: 0; min-height: 48px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 1.125rem; font-weight: 600; letter-spacing: 0.04em; text-align: center;
+  color: var(--fg); background: var(--accent-soft);
+  border: 1.5px dashed var(--accent); border-radius: 10px; padding: 10px 12px;
+}
+#codeField:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.code-row .btn { flex: 1 1 140px; min-height: 48px; }
+
+.demo { margin: 0; text-align: center; font-size: 0.8125rem; color: var(--muted); }
+
+@media (max-width: 400px) {
+  .card { padding: 22px 18px; }
+  h1 { font-size: 1.5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+  .spinner { animation-duration: 2.4s; }
+}
+</style>
+
+<main class="wrap">
+  <header class="brand">
+    <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
+      <rect width="40" height="40" rx="11" fill="var(--accent)"/>
+      <circle cx="20" cy="20" r="10.5" fill="none" stroke="var(--accent-ink)" stroke-width="2.4"/>
+      <circle cx="20" cy="20" r="2.4" fill="var(--accent-ink)"/>
+      <path d="M20 9.5v21M9.5 20h21M12.6 12.6l14.8 14.8M27.4 12.6L12.6 27.4" stroke="var(--accent-ink)" stroke-width="1.3" opacity=".75"/>
+    </svg>
+    <div>
+      <div class="brand-name">Fahrtwind</div>
+      <div class="brand-sub">Leihräder in deiner Stadt</div>
+    </div>
+  </header>
+
+  <section class="card" id="formView" aria-labelledby="formTitle">
+    <h1 id="formTitle">Konto erstellen</h1>
+    <p class="lead">Nach der Registrierung kannst du dein erstes Rad direkt per App entsperren.</p>
+
+    <div class="summary" id="summary" role="alert" tabindex="-1" hidden></div>
+
+    <form id="form" novalidate>
+      <div class="field" data-field="vorname">
+        <label class="lbl" for="vorname">Vorname</label>
+        <input type="text" id="vorname" name="vorname" autocomplete="given-name" placeholder="z. B. Lena" aria-describedby="vorname-err">
+        <p class="err" id="vorname-err" hidden></p>
+      </div>
+
+      <div class="field" data-field="email">
+        <label class="lbl" for="email">E-Mail-Adresse</label>
+        <input type="email" id="email" name="email" autocomplete="email" inputmode="email" placeholder="name@beispiel.de" aria-describedby="email-err">
+        <p class="err" id="email-err" hidden></p>
+      </div>
+
+      <div class="field" data-field="passwort">
+        <label class="lbl" for="passwort">Passwort</label>
+        <div class="input-row has-toggle">
+          <input type="password" id="passwort" name="passwort" autocomplete="new-password" aria-describedby="passwort-help passwort-err">
+          <button type="button" class="toggle" id="pwToggle" aria-pressed="false" aria-controls="passwort">Anzeigen</button>
+        </div>
+        <ul class="rules" id="passwort-help" aria-live="polite">
+          <li data-rule="len">Mind. 8 Zeichen</li>
+          <li data-rule="upper">Ein Großbuchstabe</li>
+          <li data-rule="digit">Eine Zahl</li>
+        </ul>
+        <p class="hint" id="passwort-hint" hidden>Mindestens 8 Zeichen, davon ein Großbuchstabe und eine Zahl.</p>
+        <p class="err" id="passwort-err" hidden></p>
+      </div>
+
+      <div class="field" data-field="agb">
+        <div class="check">
+          <input type="checkbox" id="agb" name="agb" aria-describedby="agb-err">
+          <label for="agb">Ich akzeptiere die Nutzungsbedingungen und habe die Datenschutzhinweise gelesen.</label>
+        </div>
+        <button type="button" class="linkish" id="agbBtn" aria-expanded="false" aria-controls="agbPanel" style="align-self:flex-start; margin-left:30px; font-size:.875rem">Nutzungsbedingungen lesen</button>
+        <div class="terms" id="agbPanel" hidden>
+          <p><strong>Kurzfassung (Beispieltext):</strong> Die Ausleihe kostet 1 € pro Start plus 0,20 € pro Minute. Räder stellst du nur in den markierten Zonen ab.</p>
+          <p>Wir speichern deine Ausleihen 12 Monate, um Abrechnung und Schadensfälle zu klären.</p>
+        </div>
+        <p class="err" id="agb-err" hidden></p>
+      </div>
+
+      <div class="field">
+        <div class="check">
+          <input type="checkbox" id="newsletter" name="newsletter">
+          <label for="newsletter">Schick mir Neuigkeiten und Aktionen per E-Mail <span class="opt">(optional)</span></label>
+        </div>
+      </div>
+
+      <button type="submit" class="btn" id="submitBtn">
+        <span class="spinner" id="spinner" hidden></span>
+        <span id="submitLabel">Konto erstellen</span>
+      </button>
+    </form>
+
+    <div>
+      <p class="foot">Schon ein Konto? <button type="button" class="linkish" id="loginBtn">Anmelden</button></p>
+      <p class="note" id="loginNote" hidden>Die Anmeldung ist in diesem Prototyp nicht enthalten.</p>
+    </div>
+  </section>
+
+  <section class="card" id="doneView" aria-labelledby="doneTitle" hidden>
+    <div class="done-icon" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 28 28"><path d="M7 14.5l4.6 4.5L21 9.5" fill="none" stroke="var(--accent)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <h1 id="doneTitle" tabindex="-1">Willkommen!</h1>
+    <p class="done-text" id="doneText"></p>
+
+    <div class="metrics" aria-labelledby="metricsTitle">
+      <h2 id="metricsTitle">Letzter Schritt</h2>
+      <p class="code-lead">Kopiere diesen Code, kehre zur Umfrage zurück und füge ihn dort ein. Danach kannst du diesen Tab schließen.</p>
+      <div class="code-row">
+        <input type="text" id="codeField" readonly aria-label="Dein Teilnahme-Code">
+        <button type="button" class="btn" id="copyBtn">Code kopieren</button>
+      </div>
+      <p class="hint" id="copyHint" hidden>Der Code ist markiert. Kopiere ihn mit Strg+C (Mac: ⌘+C) oder halte ihn auf dem Handy lange gedrückt.</p>
+    </div>
+  </section>
+
+  <p class="demo">Prototyp für eine Usability-Studie. Fahrtwind ist eine erfundene App, Eingaben werden weder gespeichert noch versendet.</p>
+</main>
+
+<script>
+(function () {
+  var mode = (location.hash === "#variante-b") ? "submit" : "inline";
+  var variantLabel = mode === "submit" ? "B – Prüfung beim Absenden" : "A – Prüfung während der Eingabe";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var form = $("form"), summary = $("summary");
+  var fields = ["vorname", "email", "passwort", "agb"];
+  var labels = { vorname: "Vorname", email: "E-Mail-Adresse", passwort: "Passwort", agb: "Nutzungsbedingungen" };
+  var shownMsg = {};
+  var metrics;
+
+  function resetMetrics() {
+    metrics = { start: null, attempts: 0, errors: 0, toggles: 0, terms: 0 };
+  }
+  resetMetrics();
+
+  if (mode === "submit") {
+    $("passwort-help").hidden = true;
+    $("passwort-hint").hidden = false;
+    $("passwort").setAttribute("aria-describedby", "passwort-hint passwort-err");
+  }
+
+  function pwRules(v) {
+    return { len: v.length >= 8, upper: /[A-ZÄÖÜ]/.test(v), digit: /\d/.test(v) };
+  }
+  var ruleText = { len: "mindestens 8 Zeichen", upper: "einen Großbuchstaben", digit: "eine Zahl" };
+
+  function validate(name) {
+    if (name === "vorname") {
+      var v = $("vorname").value.trim();
+      if (!v) return "Bitte gib deinen Vornamen ein.";
+      if (v.length < 2) return "Der Vorname braucht mindestens 2 Zeichen.";
+      return "";
+    }
+    if (name === "email") {
+      var e = $("email").value.trim();
+      if (!e) return "Bitte gib deine E-Mail-Adresse ein.";
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e)) return "Diese E-Mail-Adresse ist unvollständig, zum Beispiel name@beispiel.de.";
+      return "";
+    }
+    if (name === "passwort") {
+      var p = $("passwort").value;
+      if (!p) return "Bitte lege ein Passwort fest.";
+      var r = pwRules(p), missing = [];
+      Object.keys(r).forEach(function (k) { if (!r[k]) missing.push(ruleText[k]); });
+      if (missing.length) return "Dem Passwort fehlt noch: " + missing.join(", ") + ".";
+      return "";
+    }
+    if (name === "agb") {
+      return $("agb").checked ? "" : "Bitte akzeptiere die Nutzungsbedingungen, um fortzufahren.";
+    }
+    return "";
+  }
+
+  function setState(name, msg, markValid) {
+    var wrap = form.querySelector('[data-field="' + name + '"]');
+    var err = $(name + "-err");
+    var input = $(name);
+    if (msg) {
+      if (shownMsg[name] !== msg) metrics.errors++;
+      shownMsg[name] = msg;
+      err.textContent = msg;
+      err.hidden = false;
+      wrap.classList.add("invalid");
+      wrap.classList.remove("valid");
+      input.setAttribute("aria-invalid", "true");
+    } else {
+      shownMsg[name] = "";
+      err.hidden = true;
+      err.textContent = "";
+      wrap.classList.remove("invalid");
+      input.removeAttribute("aria-invalid");
+      if (markValid && name !== "agb") wrap.classList.add("valid"); else wrap.classList.remove("valid");
+    }
+  }
+
+  function updateRules() {
+    var r = pwRules($("passwort").value);
+    $("passwort-help").querySelectorAll("li").forEach(function (li) {
+      li.classList.toggle("met", !!r[li.dataset.rule]);
+    });
+  }
+
+  function startClock() { if (metrics.start === null) metrics.start = performance.now(); }
+  form.addEventListener("focusin", startClock);
+  form.addEventListener("input", startClock);
+
+  // Variante A: Prüfung beim Verlassen eines Feldes und Korrektur live
+  form.addEventListener("focusout", function (ev) {
+    if (mode !== "inline") return;
+    var name = ev.target.id;
+    if (name === "vorname" || name === "email" || name === "passwort") {
+      if (ev.target.value === "" && !shownMsg[name]) return; // leeres, unberührtes Feld nicht anmeckern
+      var msg = validate(name);
+      setState(name, msg, !msg);
+    }
+  });
+  form.addEventListener("input", function (ev) {
+    var name = ev.target.id;
+    if (name === "passwort" && mode === "inline") updateRules();
+    if (mode === "inline" && shownMsg[name]) {
+      var msg = validate(name);
+      if (!msg) setState(name, "", true);
+    }
+  });
+  $("agb").addEventListener("change", function () {
+    if (mode === "inline" || shownMsg.agb) setState("agb", validate("agb"), false);
+  });
+
+  $("pwToggle").addEventListener("click", function () {
+    var inp = $("passwort");
+    var show = inp.type === "password";
+    inp.type = show ? "text" : "password";
+    this.textContent = show ? "Verbergen" : "Anzeigen";
+    this.setAttribute("aria-pressed", String(show));
+    if (show) metrics.toggles++;
+  });
+
+  $("agbBtn").addEventListener("click", function () {
+    var panel = $("agbPanel");
+    var open = panel.hidden;
+    panel.hidden = !open;
+    this.setAttribute("aria-expanded", String(open));
+    this.textContent = open ? "Nutzungsbedingungen ausblenden" : "Nutzungsbedingungen lesen";
+    if (open) metrics.terms++;
+  });
+
+  $("loginBtn").addEventListener("click", function () { $("loginNote").hidden = false; });
+
+  function renderSummary(errs) {
+    if (!errs.length) { summary.hidden = true; summary.innerHTML = ""; return; }
+    var title = errs.length === 1 ? "Bitte prüfe 1 Angabe:" : "Bitte prüfe " + errs.length + " Angaben:";
+    var html = "<strong>" + title + "</strong><ul>";
+    errs.forEach(function (n) { html += '<li><button type="button" data-go="' + n + '">' + labels[n] + "</button></li>"; });
+    summary.innerHTML = html + "</ul>";
+    summary.hidden = false;
+  }
+  summary.addEventListener("click", function (ev) {
+    var go = ev.target.getAttribute && ev.target.getAttribute("data-go");
+    if (go) $(go).focus();
+  });
+
+  form.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    startClock();
+    metrics.attempts++;
+    var errs = [];
+    fields.forEach(function (n) {
+      var msg = validate(n);
+      setState(n, msg, !msg);
+      if (msg) errs.push(n);
+    });
+    if (mode === "inline") updateRules();
+    renderSummary(errs);
+    if (errs.length) {
+      if (mode === "submit") { summary.focus(); }
+      else { $(errs[0]).focus(); }
+      return;
+    }
+    var btn = $("submitBtn");
+    btn.disabled = true;
+    $("spinner").hidden = false;
+    $("submitLabel").textContent = "Konto wird erstellt …";
+    setTimeout(finish, 900);
+  });
+
+  function fmtTime(ms) {
+    var s = ms / 1000;
+    if (s < 60) return s.toFixed(1).replace(".", ",") + " s";
+    var m = Math.floor(s / 60), rest = Math.round(s - m * 60);
+    return m + ":" + (rest < 10 ? "0" : "") + rest + " min";
+  }
+
+  function finish() {
+    var ms = performance.now() - metrics.start;
+    var name = $("vorname").value.trim();
+    var mail = $("email").value.trim();
+    $("doneTitle").textContent = "Willkommen, " + name + "!";
+    $("doneText").innerHTML = "";
+    var t1 = document.createTextNode("Dein Konto ist angelegt. Wir haben dir eine Bestätigungsmail an ");
+    var strong = document.createElement("strong"); strong.textContent = mail;
+    var t2 = document.createTextNode(" geschickt. (Im Prototyp wird keine Mail versendet.)");
+    $("doneText").append(t1, strong, t2);
+
+    // Code: Variante-Sekunden-Absendeversuche-Fehlermeldungen-PasswortEingeblendet-AGBGeöffnet
+    $("codeField").value = [
+      mode === "submit" ? "B" : "A",
+      Math.round(ms / 1000),
+      metrics.attempts,
+      metrics.errors,
+      metrics.toggles,
+      metrics.terms ? 1 : 0
+    ].join("-");
+
+    $("formView").hidden = true;
+    $("doneView").hidden = false;
+    $("doneTitle").focus();
+  }
+
+  var codeField = $("codeField");
+  codeField.addEventListener("focus", function () { codeField.select(); });
+  $("copyBtn").addEventListener("click", function () {
+    var btn = this;
+    function fallback() { codeField.focus(); codeField.select(); $("copyHint").hidden = false; }
+    try {
+      navigator.clipboard.writeText(codeField.value).then(function () { btn.textContent = "Kopiert"; }, fallback);
+    } catch (e) { fallback(); }
+  });
+})();
+</script>
+
+</body></html>
