@@ -1,11 +1,11 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Fahrtwind Registrierung</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap">
 <style>
-/* Layout: eine schmale App-Karte, mittig wie ein echter Registrierungsscreen; Marke oben, Demo-Hinweis unten */
+/* Layout: schmale App-Karte wie ein echter Registrierungsscreen; Cookie-Banner als Overlay davor.
+   Variante A = vorbildlich, Variante B = realistisch schlecht (#variante-b) */
 :root {
   --bg: #EDF2EF;
   --surface: #FFFFFF;
@@ -17,7 +17,13 @@
   --accent-soft: #DDEEE8;
   --error: #B42318;
   --error-soft: #FDECEA;
+  --warn: #A15C00;
   --ok: #1E7A4B;
+  --scrim: rgba(23, 34, 30, .38);
+  --scrim-strong: rgba(10, 14, 12, .66);
+  --weak-bg: #C9D3CE;
+  --weak-fg: #F2F5F3;
+  --placeholder-weak: #A9B4AF;
   --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --body: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
@@ -25,17 +31,22 @@
   :root:not([data-theme="light"]) {
     --bg: #0E1412; --surface: #16201C; --fg: #E4EDE9; --muted: #98AAA2; --line: #2A3732;
     --accent: #3FBF9B; --accent-ink: #062219; --accent-soft: #1B322A;
-    --error: #F7836F; --error-soft: #3A1B17; --ok: #52D99A;
+    --error: #F7836F; --error-soft: #3A1B17; --warn: #F0B35A; --ok: #52D99A;
+    --scrim: rgba(0, 0, 0, .5); --scrim-strong: rgba(0, 0, 0, .75);
+    --weak-bg: #33413B; --weak-fg: #6F7F78; --placeholder-weak: #4C5B55;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0E1412; --surface: #16201C; --fg: #E4EDE9; --muted: #98AAA2; --line: #2A3732;
   --accent: #3FBF9B; --accent-ink: #062219; --accent-soft: #1B322A;
-  --error: #F7836F; --error-soft: #3A1B17; --ok: #52D99A;
+  --error: #F7836F; --error-soft: #3A1B17; --warn: #F0B35A; --ok: #52D99A;
+  --scrim: rgba(0, 0, 0, .5); --scrim-strong: rgba(0, 0, 0, .75);
+  --weak-bg: #33413B; --weak-fg: #6F7F78; --placeholder-weak: #4C5B55;
   color-scheme: dark;
 }
 
+[hidden] { display: none !important; }
 html, body { min-height: 100%; }
 body {
   background: var(--bg);
@@ -62,6 +73,7 @@ body {
   display: flex; flex-direction: column; gap: 20px;
 }
 h1 { font-family: var(--display); font-weight: 700; font-size: 1.75rem; line-height: 1.15; letter-spacing: -0.015em; margin: 0; text-wrap: balance; }
+h1:focus { outline: none; }
 .lead { margin: -8px 0 0; color: var(--muted); }
 
 form { display: flex; flex-direction: column; gap: 18px; }
@@ -69,7 +81,7 @@ form { display: flex; flex-direction: column; gap: 18px; }
 label.lbl { font-weight: 600; font-size: 0.9375rem; }
 .opt { color: var(--muted); font-weight: 400; }
 .input-row { position: relative; display: flex; }
-input[type="text"], input[type="email"], input[type="password"] {
+.va input[type="text"], .va input[type="email"], .va input[type="password"] {
   width: 100%;
   font: inherit;
   color: var(--fg);
@@ -80,11 +92,11 @@ input[type="text"], input[type="email"], input[type="password"] {
   min-height: 48px;
   transition: border-color .15s, box-shadow .15s;
 }
-input::placeholder { color: var(--muted); opacity: .7; }
-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
-.field.invalid input[type="text"], .field.invalid input[type="email"], .field.invalid input[type="password"] { border-color: var(--error); }
-.field.invalid input:focus { box-shadow: 0 0 0 3px var(--error-soft); }
-.field.valid input { border-color: var(--ok); }
+.va input::placeholder { color: var(--muted); opacity: .7; }
+.va input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.va .field.invalid input { border-color: var(--error); }
+.va .field.invalid input:focus { box-shadow: 0 0 0 3px var(--error-soft); }
+.va .field.valid input { border-color: var(--ok); }
 .has-toggle input { padding-right: 104px; }
 .toggle {
   position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
@@ -93,11 +105,22 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   padding: 8px 10px; cursor: pointer;
 }
 .toggle:hover { background: var(--accent-soft); }
-.toggle:focus-visible, .linkish:focus-visible, .btn:focus-visible, .summary button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button:focus-visible, select:focus-visible, .check input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .err { margin: 0; color: var(--error); font-size: 0.875rem; font-weight: 500; display: flex; gap: 6px; align-items: flex-start; }
 .err::before { content: "!"; flex: none; width: 16px; height: 16px; margin-top: 2px; border-radius: 50%; background: var(--error); color: var(--surface); font-size: 11px; font-weight: 700; display: grid; place-items: center; line-height: 1; }
 .hint { margin: 0; color: var(--muted); font-size: 0.875rem; }
+
+.suggest { margin: 0; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; background: var(--accent-soft); border-radius: 8px; padding: 8px 10px; }
+.suggest strong { overflow-wrap: anywhere; }
+
+.meter-row { display: flex; align-items: center; gap: 10px; }
+.meter { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.meter span { height: 5px; border-radius: 3px; background: var(--line); transition: background .2s; }
+.meter[data-level="weak"] span.on { background: var(--error); }
+.meter[data-level="mid"] span.on { background: var(--warn); }
+.meter[data-level="good"] span.on { background: var(--ok); }
+.meter-label { font-size: 0.8125rem; font-weight: 600; min-width: 4.5em; text-align: right; color: var(--muted); }
 
 .rules { list-style: none; margin: 2px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.8125rem; color: var(--muted); }
 .rules li { display: flex; align-items: center; gap: 6px; }
@@ -108,9 +131,9 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
 .check { display: flex; gap: 10px; align-items: flex-start; font-size: 0.9375rem; }
 .check input { width: 20px; height: 20px; margin: 2px 0 0; flex: none; accent-color: var(--accent); cursor: pointer; }
 .check label { cursor: pointer; }
-.field.invalid .check input { outline: 2px solid var(--error); outline-offset: 1px; border-radius: 4px; }
-.linkish { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; border-radius: 3px; }
-.terms { background: var(--accent-soft); border-radius: 10px; padding: 12px 14px; font-size: 0.875rem; color: var(--fg); }
+.va .field.invalid .check input { outline: 2px solid var(--error); outline-offset: 1px; border-radius: 4px; }
+.linkish { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; border-radius: 3px; text-align: left; }
+.terms { background: var(--accent-soft); border-radius: 10px; padding: 12px 14px; font-size: 0.875rem; }
 .terms p { margin: 0 0 6px; }
 .terms p:last-child { margin: 0; }
 
@@ -119,12 +142,13 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   min-height: 52px; border-radius: 12px; border: 0; cursor: pointer;
   background: var(--accent); color: var(--accent-ink);
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 0 18px;
   transition: filter .15s, transform .1s;
 }
 .btn:hover { filter: brightness(1.07); }
 .btn:active { transform: translateY(1px); }
 .btn[disabled] { cursor: progress; filter: saturate(.7); }
-.btn.secondary { background: transparent; color: var(--accent); border: 1.5px solid var(--line); }
+.btn.secondary { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
 .spinner { width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid currentColor; border-right-color: transparent; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -136,23 +160,53 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
 .foot { margin: 0; text-align: center; color: var(--muted); font-size: 0.9375rem; }
 .note { margin: 6px 0 0; font-size: 0.8125rem; color: var(--muted); text-align: center; }
 
+/* ---------- Variante B: realistisch schlecht ---------- */
+.vb { gap: 10px; }
+.vb h1 { font-family: var(--body); font-size: 1.25rem; font-weight: 600; }
+.vb .lead { margin: 0; font-size: 0.875rem; }
+.vb .row { display: flex; gap: 8px; }
+.vb .row > * { flex: 1 1 0; min-width: 0; }
+.vb input[type="text"], .vb input[type="email"], .vb input[type="password"], .vb input[type="tel"], .vb select {
+  width: 100%;
+  font: inherit; font-size: 0.875rem;
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 10px;
+  min-height: 40px;
+}
+.vb input::placeholder { color: var(--placeholder-weak); opacity: 1; }
+.vb select:invalid { color: var(--placeholder-weak); }
+.vb option { color: var(--fg); }
+.vb input:focus, .vb select:focus { outline: none; border-color: var(--muted); }
+.vb .bad { border-color: var(--error) !important; }
+.b-error { margin: 0; padding: 8px 10px; background: var(--error-soft); color: var(--error); font-size: 0.875rem; border-radius: 4px; }
+.b-pwrules { margin: -4px 0 0; color: var(--error); font-size: 0.75rem; }
+.b-small { font-size: 0.75rem; color: var(--muted); line-height: 1.4; }
+.vb .check { font-size: 0.75rem; color: var(--muted); gap: 8px; }
+.vb .check input { width: 14px; height: 14px; margin-top: 1px; }
+.b-submit-row { display: flex; justify-content: flex-end; margin-top: 4px; }
+.btn-weak {
+  font: inherit; font-size: 0.875rem; font-weight: 500;
+  min-height: 36px; padding: 0 16px; border-radius: 4px; border: 0; cursor: pointer;
+  background: var(--weak-bg); color: var(--weak-fg);
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-weak[disabled] { cursor: progress; }
+
+/* ---------- Abschluss ---------- */
 .done-icon { width: 56px; height: 56px; border-radius: 50%; background: var(--accent-soft); display: grid; place-items: center; }
 .done-text { margin: -6px 0 0; color: var(--muted); overflow-wrap: anywhere; }
 .done-text strong { color: var(--fg); }
-
 .metrics { border-top: 1px dashed var(--line); padding-top: 18px; display: flex; flex-direction: column; gap: 12px; }
 .metrics h2 { margin: 0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
-.metrics dl { margin: 0; display: grid; grid-template-columns: 1fr auto; gap: 8px 16px; font-size: 0.9375rem; }
-.metrics dt { color: var(--muted); }
-.metrics dd { margin: 0; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
-.metrics-actions { display: flex; flex-wrap: wrap; gap: 10px; }
-.metrics-actions .btn { flex: 1 1 160px; min-height: 44px; font-size: 0.9375rem; }
 .code-lead { margin: 0; }
 .code-row { display: flex; flex-wrap: wrap; gap: 10px; }
 #codeField {
-  flex: 1 1 180px; min-width: 0; min-height: 48px;
+  flex: 1 1 200px; min-width: 0; min-height: 48px;
   font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  font-size: 1.125rem; font-weight: 600; letter-spacing: 0.04em; text-align: center;
+  font-size: 1rem; font-weight: 600; letter-spacing: 0.02em; text-align: center;
   color: var(--fg); background: var(--accent-soft);
   border: 1.5px dashed var(--accent); border-radius: 10px; padding: 10px 12px;
 }
@@ -161,9 +215,62 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
 
 .demo { margin: 0; text-align: center; font-size: 0.8125rem; color: var(--muted); }
 
+/* ---------- Cookie-Banner ---------- */
+.overlay {
+  position: fixed; inset: 0; z-index: 20;
+  display: flex; justify-content: center;
+  padding-top: max(16px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.overlay.ca { background: var(--scrim); align-items: flex-end; }
+.overlay.cb { background: var(--scrim-strong); align-items: center; }
+.sheet {
+  width: 100%; max-width: 480px; max-height: 100%; overflow-y: auto;
+  background: var(--surface); color: var(--fg);
+  border-radius: 16px; padding: 22px 20px;
+  display: flex; flex-direction: column; gap: 14px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.18);
+}
+.sheet h2 { margin: 0; font-family: var(--display); font-size: 1.2rem; line-height: 1.2; }
+.sheet h2:focus { outline: none; }
+.sheet p { margin: 0; font-size: 0.9375rem; }
+.ca-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.ca-actions .btn { min-height: 46px; font-size: 0.9375rem; padding: 0 10px; }
+@media (max-width: 460px) { .ca-actions { grid-template-columns: 1fr; } }
+
+.cats { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--line); border-radius: 12px; }
+.cat { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; padding: 12px 14px; }
+.cat + .cat { border-top: 1px solid var(--line); }
+.cat-text { min-width: 0; }
+.cat-text label, .cat-text .cat-name { font-weight: 600; font-size: 0.9375rem; display: block; }
+.cat-text p { font-size: 0.8125rem; color: var(--muted); margin: 2px 0 0; }
+.switch {
+  appearance: none; -webkit-appearance: none; flex: none;
+  width: 42px; height: 24px; border-radius: 12px; margin: 2px 0 0;
+  background: var(--line); position: relative; cursor: pointer; transition: background .15s;
+}
+.switch::before {
+  content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--surface); box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: transform .15s;
+}
+.switch:checked { background: var(--accent); }
+.switch:checked::before { transform: translateX(18px); }
+.switch:disabled { opacity: .55; cursor: not-allowed; }
+.switch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.cb-sheet { max-width: 520px; border-radius: 6px; gap: 12px; }
+.cb-sheet h2 { font-family: var(--body); font-weight: 600; font-size: 1.05rem; }
+.cb-text { font-size: 0.8125rem !important; color: var(--muted); line-height: 1.45; max-height: 9.5em; overflow-y: auto; padding-right: 4px; }
+.cb-primary { width: 100%; min-height: 50px; border-radius: 6px; }
+.cb-link { font: inherit; font-size: 0.75rem; color: var(--placeholder-weak); background: none; border: 0; padding: 4px 0; cursor: pointer; text-align: center; align-self: center; }
+.cb-sheet .cats { border-radius: 4px; }
+
 @media (max-width: 400px) {
   .card { padding: 22px 18px; }
   h1 { font-size: 1.5rem; }
+  .vb .row.name { flex-direction: column; }
 }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
@@ -171,7 +278,7 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
 }
 </style>
 
-<main class="wrap">
+<main class="wrap" id="app">
   <header class="brand">
     <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
       <rect width="40" height="40" rx="11" fill="var(--accent)"/>
@@ -185,79 +292,133 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
     </div>
   </header>
 
-  <section class="card" id="formView" aria-labelledby="formTitle">
-    <h1 id="formTitle">Konto erstellen</h1>
+  <!-- ===================== VARIANTE A ===================== -->
+  <section class="card va" id="viewA" aria-labelledby="titleA" hidden>
+    <h1 id="titleA" tabindex="-1">Konto erstellen</h1>
     <p class="lead">Nach der Registrierung kannst du dein erstes Rad direkt per App entsperren.</p>
 
-    <div class="summary" id="summary" role="alert" tabindex="-1" hidden></div>
+    <div class="summary" id="a-summary" role="alert" tabindex="-1" hidden></div>
 
-    <form id="form" novalidate>
-      <div class="field" data-field="vorname">
-        <label class="lbl" for="vorname">Vorname</label>
-        <input type="text" id="vorname" name="vorname" autocomplete="given-name" placeholder="z. B. Lena" aria-describedby="vorname-err">
-        <p class="err" id="vorname-err" hidden></p>
+    <form id="formA" novalidate>
+      <div class="field" data-field="a-vorname">
+        <label class="lbl" for="a-vorname">Vorname</label>
+        <input type="text" id="a-vorname" autocomplete="given-name" placeholder="z. B. Lena" aria-describedby="a-vorname-err">
+        <p class="err" id="a-vorname-err" hidden></p>
       </div>
 
-      <div class="field" data-field="email">
-        <label class="lbl" for="email">E-Mail-Adresse</label>
-        <input type="email" id="email" name="email" autocomplete="email" inputmode="email" placeholder="name@beispiel.de" aria-describedby="email-err">
-        <p class="err" id="email-err" hidden></p>
+      <div class="field" data-field="a-email">
+        <label class="lbl" for="a-email">E-Mail-Adresse</label>
+        <input type="email" id="a-email" autocomplete="email" inputmode="email" placeholder="name@beispiel.de" aria-describedby="a-email-err a-suggest">
+        <p class="suggest" id="a-suggest" aria-live="polite" hidden>
+          <span>Meintest du <strong id="a-suggest-addr"></strong>?</span>
+          <button type="button" class="linkish" id="a-suggest-btn">Übernehmen</button>
+        </p>
+        <p class="err" id="a-email-err" hidden></p>
       </div>
 
-      <div class="field" data-field="passwort">
-        <label class="lbl" for="passwort">Passwort</label>
+      <div class="field" data-field="a-passwort">
+        <label class="lbl" for="a-passwort">Passwort</label>
         <div class="input-row has-toggle">
-          <input type="password" id="passwort" name="passwort" autocomplete="new-password" aria-describedby="passwort-help passwort-err">
-          <button type="button" class="toggle" id="pwToggle" aria-pressed="false" aria-controls="passwort">Anzeigen</button>
+          <input type="password" id="a-passwort" autocomplete="new-password" aria-describedby="a-rules a-passwort-err">
+          <button type="button" class="toggle" id="a-pwToggle" aria-pressed="false" aria-controls="a-passwort">Anzeigen</button>
         </div>
-        <ul class="rules" id="passwort-help" aria-live="polite">
+        <div class="meter-row">
+          <div class="meter" id="a-meter" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+          <span class="meter-label" id="a-meter-label" aria-live="polite"></span>
+        </div>
+        <ul class="rules" id="a-rules">
           <li data-rule="len">Mind. 8 Zeichen</li>
           <li data-rule="upper">Ein Großbuchstabe</li>
           <li data-rule="digit">Eine Zahl</li>
         </ul>
-        <p class="hint" id="passwort-hint" hidden>Mindestens 8 Zeichen, davon ein Großbuchstabe und eine Zahl.</p>
-        <p class="err" id="passwort-err" hidden></p>
+        <p class="err" id="a-passwort-err" hidden></p>
       </div>
 
-      <div class="field" data-field="agb">
+      <div class="field" data-field="a-agb">
         <div class="check">
-          <input type="checkbox" id="agb" name="agb" aria-describedby="agb-err">
-          <label for="agb">Ich akzeptiere die Nutzungsbedingungen und habe die Datenschutzhinweise gelesen.</label>
+          <input type="checkbox" id="a-agb" aria-describedby="a-agb-err">
+          <label for="a-agb">Ich akzeptiere die Nutzungsbedingungen und habe die Datenschutzhinweise gelesen.</label>
         </div>
-        <button type="button" class="linkish" id="agbBtn" aria-expanded="false" aria-controls="agbPanel" style="align-self:flex-start; margin-left:30px; font-size:.875rem">Nutzungsbedingungen lesen</button>
-        <div class="terms" id="agbPanel" hidden>
+        <button type="button" class="linkish" id="a-agbBtn" aria-expanded="false" aria-controls="a-agbPanel" style="align-self:flex-start; margin-left:30px; font-size:.875rem">Nutzungsbedingungen lesen</button>
+        <div class="terms" id="a-agbPanel" hidden>
           <p><strong>Kurzfassung (Beispieltext):</strong> Die Ausleihe kostet 1 € pro Start plus 0,20 € pro Minute. Räder stellst du nur in den markierten Zonen ab.</p>
           <p>Wir speichern deine Ausleihen 12 Monate, um Abrechnung und Schadensfälle zu klären.</p>
         </div>
-        <p class="err" id="agb-err" hidden></p>
+        <p class="err" id="a-agb-err" hidden></p>
       </div>
 
       <div class="field">
         <div class="check">
-          <input type="checkbox" id="newsletter" name="newsletter">
-          <label for="newsletter">Schick mir Neuigkeiten und Aktionen per E-Mail <span class="opt">(optional)</span></label>
+          <input type="checkbox" id="a-newsletter">
+          <label for="a-newsletter">Schick mir Neuigkeiten und Aktionen per E-Mail <span class="opt">(optional)</span></label>
         </div>
       </div>
 
-      <button type="submit" class="btn" id="submitBtn">
-        <span class="spinner" id="spinner" hidden></span>
-        <span id="submitLabel">Konto erstellen</span>
+      <button type="submit" class="btn" id="a-submit">
+        <span class="spinner" id="a-spinner" hidden></span>
+        <span id="a-submitLabel">Konto erstellen</span>
       </button>
     </form>
 
     <div>
-      <p class="foot">Schon ein Konto? <button type="button" class="linkish" id="loginBtn">Anmelden</button></p>
-      <p class="note" id="loginNote" hidden>Die Anmeldung ist in diesem Prototyp nicht enthalten.</p>
+      <p class="foot">Schon ein Konto? <button type="button" class="linkish" id="a-loginBtn">Anmelden</button></p>
+      <p class="note" id="a-loginNote" hidden>Die Anmeldung ist in diesem Prototyp nicht enthalten.</p>
     </div>
   </section>
 
+  <!-- ===================== VARIANTE B ===================== -->
+  <section class="card vb" id="viewB" aria-labelledby="titleB" hidden>
+    <h1 id="titleB" tabindex="-1">Registrierung</h1>
+    <p class="lead">Bitte füllen Sie das folgende Formular vollständig aus.</p>
+    <p class="b-error" id="b-error" role="alert" tabindex="-1" hidden>Ungültige Eingabe. Bitte überprüfen Sie Ihre Angaben.</p>
+
+    <form id="formB" novalidate>
+      <select id="b-anrede" aria-label="Anrede" required>
+        <option value="" selected disabled>Anrede</option>
+        <option>Herr</option><option>Frau</option><option>Divers</option><option>Keine Angabe</option>
+      </select>
+      <div class="row name">
+        <input type="text" id="b-vorname" placeholder="Vorname" aria-label="Vorname" autocomplete="off">
+        <input type="text" id="b-nachname" placeholder="Nachname" aria-label="Nachname" autocomplete="off">
+      </div>
+      <div class="row">
+        <select id="b-tag" aria-label="Geburtstag: Tag" required><option value="" selected disabled>Tag</option></select>
+        <select id="b-monat" aria-label="Geburtstag: Monat" required><option value="" selected disabled>Monat</option></select>
+        <select id="b-jahr" aria-label="Geburtstag: Jahr" required><option value="" selected disabled>Jahr</option></select>
+      </div>
+      <input type="tel" id="b-telefon" placeholder="Telefonnummer" aria-label="Telefonnummer" autocomplete="off">
+      <input type="email" id="b-email" placeholder="E-Mail" aria-label="E-Mail" autocomplete="off">
+      <input type="email" id="b-email2" placeholder="E-Mail wiederholen" aria-label="E-Mail wiederholen" autocomplete="off">
+      <input type="password" id="b-passwort" placeholder="Passwort" aria-label="Passwort" autocomplete="off">
+      <p class="b-pwrules" id="b-pwrules" hidden>Das Passwort muss 10–20 Zeichen lang sein und Groß- und Kleinbuchstaben, mindestens eine Zahl sowie ein Sonderzeichen enthalten.</p>
+      <input type="password" id="b-passwort2" placeholder="Passwort wiederholen" aria-label="Passwort wiederholen" autocomplete="off">
+
+      <div class="check">
+        <input type="checkbox" id="b-newsletter" checked>
+        <label for="b-newsletter">Ja, ich möchte regelmäßig Angebote, Neuigkeiten und Gewinnspiele von Fahrtwind und ausgewählten Partnerunternehmen per E-Mail, SMS und Telefon erhalten. Diese Einwilligung kann ich jederzeit widerrufen.</label>
+      </div>
+      <div class="check">
+        <input type="checkbox" id="b-agb">
+        <label for="b-agb">Ich habe die AGB und die Datenschutzbestimmungen gelesen und akzeptiere diese.</label>
+      </div>
+
+      <div class="b-submit-row">
+        <button type="submit" class="btn-weak" id="b-submit">
+          <span class="spinner" id="b-spinner" hidden></span>
+          <span id="b-submitLabel">Absenden</span>
+        </button>
+      </div>
+    </form>
+    <p class="b-small">Mit dem Absenden des Formulars erklären Sie sich mit der Verarbeitung Ihrer Daten gemäß unserer Datenschutzerklärung einverstanden.</p>
+  </section>
+
+  <!-- ===================== ABSCHLUSS ===================== -->
   <section class="card" id="doneView" aria-labelledby="doneTitle" hidden>
     <div class="done-icon" aria-hidden="true">
       <svg width="28" height="28" viewBox="0 0 28 28"><path d="M7 14.5l4.6 4.5L21 9.5" fill="none" stroke="var(--accent)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
     <h1 id="doneTitle" tabindex="-1">Willkommen!</h1>
     <p class="done-text" id="doneText"></p>
-
     <div class="metrics" aria-labelledby="metricsTitle">
       <h2 id="metricsTitle">Letzter Schritt</h2>
       <p class="code-lead">Kopiere diesen Code, kehre zur Umfrage zurück und füge ihn dort ein. Danach kannst du diesen Tab schließen.</p>
@@ -269,219 +430,406 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
     </div>
   </section>
 
-  <p class="demo">Prototyp für eine Usability-Studie. Fahrtwind ist eine erfundene App, Eingaben werden weder gespeichert noch versendet.</p>
+  <p class="demo">Prototyp für eine Usability-Studie. Fahrtwind ist eine erfundene App. Eingaben werden weder gespeichert noch versendet, und es werden keine Cookies gesetzt.</p>
 </main>
+
+<!-- ===================== COOKIE-BANNER A (fair) ===================== -->
+<div class="overlay ca" id="cookieA" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ca-title">
+    <div id="ca-main" style="display:flex; flex-direction:column; gap:14px">
+      <h2 id="ca-title" tabindex="-1">Cookies bei Fahrtwind</h2>
+      <p>Notwendige Cookies brauchen wir, damit Anmeldung und Ausleihe funktionieren. Mit deiner Erlaubnis nutzen wir zusätzlich Cookies für Statistik, Marketing und Personalisierung. Du kannst deine Auswahl jederzeit in den Einstellungen ändern.</p>
+      <div class="ca-actions">
+        <button type="button" class="btn secondary" data-ca="necessary">Nur notwendige</button>
+        <button type="button" class="btn secondary" data-ca="settings">Einstellungen</button>
+        <button type="button" class="btn secondary" data-ca="all">Alle akzeptieren</button>
+      </div>
+    </div>
+    <div id="ca-settings" style="display:flex; flex-direction:column; gap:14px" hidden>
+      <h2 id="ca-settings-title" tabindex="-1">Cookie-Einstellungen</h2>
+      <div class="cats">
+        <div class="cat">
+          <div class="cat-text"><span class="cat-name">Notwendig</span><p>Anmeldung, Sicherheit und Ausleihe. Immer aktiv.</p></div>
+          <input type="checkbox" class="switch" role="switch" checked disabled aria-label="Notwendig, immer aktiv">
+        </div>
+        <div class="cat">
+          <div class="cat-text"><label for="ca-stat">Statistik</label><p>Hilft uns zu verstehen, welche Funktionen genutzt werden.</p></div>
+          <input type="checkbox" class="switch ca-opt" role="switch" id="ca-stat">
+        </div>
+        <div class="cat">
+          <div class="cat-text"><label for="ca-mkt">Marketing</label><p>Zeigt dir Werbung für Fahrtwind auf anderen Websites.</p></div>
+          <input type="checkbox" class="switch ca-opt" role="switch" id="ca-mkt">
+        </div>
+        <div class="cat">
+          <div class="cat-text"><label for="ca-pers">Personalisierung</label><p>Merkt sich bevorzugte Stationen und Radtypen.</p></div>
+          <input type="checkbox" class="switch ca-opt" role="switch" id="ca-pers">
+        </div>
+      </div>
+      <div class="ca-actions">
+        <button type="button" class="btn secondary" data-ca="necessary">Nur notwendige</button>
+        <button type="button" class="btn secondary" data-ca="save">Auswahl speichern</button>
+        <button type="button" class="btn secondary" data-ca="all">Alle akzeptieren</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== COOKIE-BANNER B (Dark Patterns) ===================== -->
+<div class="overlay cb" id="cookieB" hidden>
+  <div class="sheet cb-sheet" role="dialog" aria-modal="true" aria-labelledby="cb-title">
+    <div id="cb-main" style="display:flex; flex-direction:column; gap:12px">
+      <h2 id="cb-title" tabindex="-1">Wir schätzen Ihre Privatsphäre</h2>
+      <p class="cb-text">Wir und unsere 143 Partner speichern und/oder greifen auf Informationen auf Ihrem Gerät zu, wie z. B. Cookies, eindeutige Kennungen und andere Gerätedaten, und verarbeiten personenbezogene Daten wie Ihre IP-Adresse, um personalisierte Anzeigen und Inhalte bereitzustellen, Anzeigen und Inhalte zu messen, Erkenntnisse über Zielgruppen zu gewinnen und Produkte zu entwickeln und zu verbessern. Einige Partner verarbeiten Ihre Daten auf Grundlage eines berechtigten Interesses, dem Sie in den Einstellungen widersprechen können. Mit Ihrer Erlaubnis verwenden wir und unsere Partner zudem genaue Standortdaten und die Identifikation durch Gerätescans. Ihre Einwilligung umfasst auch die Übermittlung in Drittländer ohne angemessenes Datenschutzniveau. Sie können Ihre Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen.</p>
+      <button type="button" class="btn cb-primary" data-cb="all">Alle akzeptieren und fortfahren</button>
+      <button type="button" class="cb-link" data-cb="settings">Einstellungen verwalten</button>
+    </div>
+    <div id="cb-settings" style="display:flex; flex-direction:column; gap:12px" hidden>
+      <h2 id="cb-settings-title" tabindex="-1">Datenschutz-Präferenzcenter</h2>
+      <div class="cats">
+        <div class="cat">
+          <div class="cat-text"><span class="cat-name">Unbedingt erforderlich</span><p>Immer aktiv.</p></div>
+          <input type="checkbox" class="switch" role="switch" checked disabled aria-label="Unbedingt erforderlich, immer aktiv">
+        </div>
+        <div class="cat">
+          <div class="cat-text"><label for="cb-stat">Leistung und Statistik</label><p>Messung der Reichweite und Optimierung unserer Angebote.</p></div>
+          <input type="checkbox" class="switch cb-opt" role="switch" id="cb-stat" checked>
+        </div>
+        <div class="cat">
+          <div class="cat-text"><label for="cb-mkt">Marketing und Partner</label><p>Personalisierte Werbung durch Fahrtwind und 143 Partner.</p></div>
+          <input type="checkbox" class="switch cb-opt" role="switch" id="cb-mkt" checked>
+        </div>
+        <div class="cat">
+          <div class="cat-text"><label for="cb-pers">Funktional und Personalisierung</label><p>Erweiterte Funktionen und personalisierte Inhalte.</p></div>
+          <input type="checkbox" class="switch cb-opt" role="switch" id="cb-pers" checked>
+        </div>
+      </div>
+      <button type="button" class="btn cb-primary" data-cb="all">Alle akzeptieren</button>
+      <button type="button" class="cb-link" data-cb="save">Auswahl bestätigen</button>
+    </div>
+  </div>
+</div>
 
 <script>
 (function () {
-  var mode = (location.hash === "#variante-b") ? "submit" : "inline";
-  var variantLabel = mode === "submit" ? "B – Prüfung beim Absenden" : "A – Prüfung während der Eingabe";
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const isB = /^#variante-b$/i.test(location.hash);
 
-  var $ = function (id) { return document.getElementById(id); };
-  var form = $("form"), summary = $("summary");
-  var fields = ["vorname", "email", "passwort", "agb"];
-  var labels = { vorname: "Vorname", email: "E-Mail-Adresse", passwort: "Passwort", agb: "Nutzungsbedingungen" };
-  var shownMsg = {};
-  var metrics;
+  // ---------- Messwerte ----------
+  const M = {
+    loadT: performance.now(), bannerMs: 0, cookie: "-", optIn: 0,
+    formStart: null, attempts: 0, errors: 0, byField: {},
+    pasteBlocks: 0, toggles: 0, suggestUsed: 0
+  };
+  const countErr = (code) => { M.errors++; M.byField[code] = (M.byField[code] || 0) + 1; };
 
-  function resetMetrics() {
-    metrics = { start: null, attempts: 0, errors: 0, toggles: 0, terms: 0 };
-  }
-  resetMetrics();
-
-  if (mode === "submit") {
-    $("passwort-help").hidden = true;
-    $("passwort-hint").hidden = false;
-    $("passwort").setAttribute("aria-describedby", "passwort-hint passwort-err");
-  }
-
-  function pwRules(v) {
-    return { len: v.length >= 8, upper: /[A-ZÄÖÜ]/.test(v), digit: /\d/.test(v) };
-  }
-  var ruleText = { len: "mindestens 8 Zeichen", upper: "einen Großbuchstaben", digit: "eine Zahl" };
-
-  function validate(name) {
-    if (name === "vorname") {
-      var v = $("vorname").value.trim();
-      if (!v) return "Bitte gib deinen Vornamen ein.";
-      if (v.length < 2) return "Der Vorname braucht mindestens 2 Zeichen.";
-      return "";
-    }
-    if (name === "email") {
-      var e = $("email").value.trim();
-      if (!e) return "Bitte gib deine E-Mail-Adresse ein.";
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e)) return "Diese E-Mail-Adresse ist unvollständig, zum Beispiel name@beispiel.de.";
-      return "";
-    }
-    if (name === "passwort") {
-      var p = $("passwort").value;
-      if (!p) return "Bitte lege ein Passwort fest.";
-      var r = pwRules(p), missing = [];
-      Object.keys(r).forEach(function (k) { if (!r[k]) missing.push(ruleText[k]); });
-      if (missing.length) return "Dem Passwort fehlt noch: " + missing.join(", ") + ".";
-      return "";
-    }
-    if (name === "agb") {
-      return $("agb").checked ? "" : "Bitte akzeptiere die Nutzungsbedingungen, um fortzufahren.";
-    }
-    return "";
-  }
-
-  function setState(name, msg, markValid) {
-    var wrap = form.querySelector('[data-field="' + name + '"]');
-    var err = $(name + "-err");
-    var input = $(name);
-    if (msg) {
-      if (shownMsg[name] !== msg) metrics.errors++;
-      shownMsg[name] = msg;
-      err.textContent = msg;
-      err.hidden = false;
-      wrap.classList.add("invalid");
-      wrap.classList.remove("valid");
-      input.setAttribute("aria-invalid", "true");
-    } else {
-      shownMsg[name] = "";
-      err.hidden = true;
-      err.textContent = "";
-      wrap.classList.remove("invalid");
-      input.removeAttribute("aria-invalid");
-      if (markValid && name !== "agb") wrap.classList.add("valid"); else wrap.classList.remove("valid");
-    }
-  }
-
-  function updateRules() {
-    var r = pwRules($("passwort").value);
-    $("passwort-help").querySelectorAll("li").forEach(function (li) {
-      li.classList.toggle("met", !!r[li.dataset.rule]);
-    });
-  }
-
-  function startClock() { if (metrics.start === null) metrics.start = performance.now(); }
+  const view = isB ? $("viewB") : $("viewA");
+  const form = isB ? $("formB") : $("formA");
+  view.hidden = false;
+  const startClock = () => { if (M.formStart === null) M.formStart = performance.now(); };
   form.addEventListener("focusin", startClock);
   form.addEventListener("input", startClock);
 
-  // Variante A: Prüfung beim Verlassen eines Feldes und Korrektur live
-  form.addEventListener("focusout", function (ev) {
-    if (mode !== "inline") return;
-    var name = ev.target.id;
-    if (name === "vorname" || name === "email" || name === "passwort") {
-      if (ev.target.value === "" && !shownMsg[name]) return; // leeres, unberührtes Feld nicht anmeckern
-      var msg = validate(name);
-      setState(name, msg, !msg);
-    }
-  });
-  form.addEventListener("input", function (ev) {
-    var name = ev.target.id;
-    if (name === "passwort" && mode === "inline") updateRules();
-    if (mode === "inline" && shownMsg[name]) {
-      var msg = validate(name);
-      if (!msg) setState(name, "", true);
-    }
-  });
-  $("agb").addEventListener("change", function () {
-    if (mode === "inline" || shownMsg.agb) setState("agb", validate("agb"), false);
-  });
+  // ---------- Cookie-Banner ----------
+  const app = $("app");
+  const banner = isB ? $("cookieB") : $("cookieA");
+  const p = isB ? "cb" : "ca";
+  banner.hidden = false;
+  app.inert = true;
+  requestAnimationFrame(() => $(p + "-title").focus());
 
-  $("pwToggle").addEventListener("click", function () {
-    var inp = $("passwort");
-    var show = inp.type === "password";
-    inp.type = show ? "text" : "password";
-    this.textContent = show ? "Verbergen" : "Anzeigen";
-    this.setAttribute("aria-pressed", String(show));
-    if (show) metrics.toggles++;
-  });
-
-  $("agbBtn").addEventListener("click", function () {
-    var panel = $("agbPanel");
-    var open = panel.hidden;
-    panel.hidden = !open;
-    this.setAttribute("aria-expanded", String(open));
-    this.textContent = open ? "Nutzungsbedingungen ausblenden" : "Nutzungsbedingungen lesen";
-    if (open) metrics.terms++;
-  });
-
-  $("loginBtn").addEventListener("click", function () { $("loginNote").hidden = false; });
-
-  function renderSummary(errs) {
-    if (!errs.length) { summary.hidden = true; summary.innerHTML = ""; return; }
-    var title = errs.length === 1 ? "Bitte prüfe 1 Angabe:" : "Bitte prüfe " + errs.length + " Angaben:";
-    var html = "<strong>" + title + "</strong><ul>";
-    errs.forEach(function (n) { html += '<li><button type="button" data-go="' + n + '">' + labels[n] + "</button></li>"; });
-    summary.innerHTML = html + "</ul>";
-    summary.hidden = false;
+  function closeBanner(choice) {
+    const opts = banner.querySelectorAll("." + p + "-opt");
+    let n = 0;
+    if (choice === "A") n = opts.length;
+    else if (choice === "E") opts.forEach((o) => { if (o.checked) n++; });
+    M.cookie = choice; M.optIn = n;
+    M.bannerMs = performance.now() - M.loadT;
+    banner.hidden = true;
+    app.inert = false;
+    (isB ? $("titleB") : $("titleA")).focus();
   }
-  summary.addEventListener("click", function (ev) {
-    var go = ev.target.getAttribute && ev.target.getAttribute("data-go");
-    if (go) $(go).focus();
+  banner.addEventListener("click", (ev) => {
+    const btn = ev.target.closest("button[data-" + p + "]");
+    if (!btn) return;
+    const act = btn.getAttribute("data-" + p);
+    if (act === "settings") {
+      $(p + "-main").hidden = true;
+      $(p + "-settings").hidden = false;
+      $(p + "-settings-title").focus();
+    } else if (act === "all") closeBanner("A");
+    else if (act === "necessary") closeBanner("N");
+    else if (act === "save") closeBanner("E");
   });
 
-  form.addEventListener("submit", function (ev) {
-    ev.preventDefault();
-    startClock();
-    metrics.attempts++;
-    var errs = [];
-    fields.forEach(function (n) {
-      var msg = validate(n);
-      setState(n, msg, !msg);
-      if (msg) errs.push(n);
-    });
-    if (mode === "inline") updateRules();
-    renderSummary(errs);
-    if (errs.length) {
-      if (mode === "submit") { summary.focus(); }
-      else { $(errs[0]).focus(); }
-      return;
-    }
-    var btn = $("submitBtn");
-    btn.disabled = true;
-    $("spinner").hidden = false;
-    $("submitLabel").textContent = "Konto wird erstellt …";
-    setTimeout(finish, 900);
-  });
-
-  function fmtTime(ms) {
-    var s = ms / 1000;
-    if (s < 60) return s.toFixed(1).replace(".", ",") + " s";
-    var m = Math.floor(s / 60), rest = Math.round(s - m * 60);
-    return m + ":" + (rest < 10 ? "0" : "") + rest + " min";
-  }
-
-  function finish() {
-    var ms = performance.now() - metrics.start;
-    var name = $("vorname").value.trim();
-    var mail = $("email").value.trim();
+  // ---------- Abschluss ----------
+  function finish(name, mail) {
+    const ms = performance.now() - (M.formStart ?? performance.now());
     $("doneTitle").textContent = "Willkommen, " + name + "!";
-    $("doneText").innerHTML = "";
-    var t1 = document.createTextNode("Dein Konto ist angelegt. Wir haben dir eine Bestätigungsmail an ");
-    var strong = document.createElement("strong"); strong.textContent = mail;
-    var t2 = document.createTextNode(" geschickt. (Im Prototyp wird keine Mail versendet.)");
-    $("doneText").append(t1, strong, t2);
+    const t = $("doneText");
+    t.textContent = "";
+    const strong = document.createElement("strong");
+    strong.textContent = mail;
+    t.append("Dein Konto ist angelegt. Wir haben dir eine Bestätigungsmail an ", strong, " geschickt. (Im Prototyp wird keine Mail versendet.)");
 
-    // Code: Variante-Sekunden-Absendeversuche-Fehlermeldungen-PasswortEingeblendet-AGBGeöffnet
+    let top = "0", topN = 0;
+    Object.keys(M.byField).forEach((k) => { if (M.byField[k] > topN) { top = k; topN = M.byField[k]; } });
+
+    // Code: Variante-FormularSek-BannerSek-CookieWahl-OptionaleCookies-Absendeversuche-Fehler-HäufigstesFehlerfeld-EinfügenBlockiert-PasswortEingeblendet-EmailVorschlagGenutzt
     $("codeField").value = [
-      mode === "submit" ? "B" : "A",
+      isB ? "B" : "A",
       Math.round(ms / 1000),
-      metrics.attempts,
-      metrics.errors,
-      metrics.toggles,
-      metrics.terms ? 1 : 0
+      Math.round(M.bannerMs / 1000),
+      M.cookie, M.optIn,
+      M.attempts, M.errors, top,
+      M.pasteBlocks, M.toggles, M.suggestUsed
     ].join("-");
 
-    $("formView").hidden = true;
+    view.hidden = true;
     $("doneView").hidden = false;
+    window.scrollTo(0, 0);
     $("doneTitle").focus();
   }
 
-  var codeField = $("codeField");
-  codeField.addEventListener("focus", function () { codeField.select(); });
+  const codeField = $("codeField");
+  codeField.addEventListener("focus", () => codeField.select());
   $("copyBtn").addEventListener("click", function () {
-    var btn = this;
-    function fallback() { codeField.focus(); codeField.select(); $("copyHint").hidden = false; }
-    try {
-      navigator.clipboard.writeText(codeField.value).then(function () { btn.textContent = "Kopiert"; }, fallback);
-    } catch (e) { fallback(); }
+    const btn = this;
+    const fallback = () => { codeField.focus(); codeField.select(); $("copyHint").hidden = false; };
+    try { navigator.clipboard.writeText(codeField.value).then(() => { btn.textContent = "Kopiert"; }, fallback); }
+    catch (e) { fallback(); }
   });
+
+  if (isB) initB(); else initA();
+
+  // =====================================================================
+  // VARIANTE A – vorbildlich
+  // =====================================================================
+  function initA() {
+    const F = { vorname: "VN", email: "EM", passwort: "PW", agb: "AGB" };
+    const labels = { vorname: "Vorname", email: "E-Mail-Adresse", passwort: "Passwort", agb: "Nutzungsbedingungen" };
+    const el = (n) => $("a-" + n);
+    let shown = {};
+
+    const pwRules = (v) => ({ len: v.length >= 8, upper: /[A-ZÄÖÜ]/.test(v), digit: /\d/.test(v) });
+    const ruleText = { len: "mindestens 8 Zeichen", upper: "einen Großbuchstaben", digit: "eine Zahl" };
+
+    function validate(n) {
+      if (n === "vorname") {
+        const v = el(n).value.trim();
+        if (!v) return "Bitte gib deinen Vornamen ein.";
+        if (v.length < 2) return "Der Vorname braucht mindestens 2 Zeichen.";
+        return "";
+      }
+      if (n === "email") {
+        const v = el(n).value.trim();
+        if (!v) return "Bitte gib deine E-Mail-Adresse ein.";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) return "Diese E-Mail-Adresse ist unvollständig, zum Beispiel name@beispiel.de.";
+        return "";
+      }
+      if (n === "passwort") {
+        const v = el(n).value;
+        if (!v) return "Bitte lege ein Passwort fest.";
+        const r = pwRules(v), miss = [];
+        Object.keys(r).forEach((k) => { if (!r[k]) miss.push(ruleText[k]); });
+        return miss.length ? "Dem Passwort fehlt noch: " + miss.join(", ") + "." : "";
+      }
+      if (n === "agb") return el(n).checked ? "" : "Bitte akzeptiere die Nutzungsbedingungen, um fortzufahren.";
+      return "";
+    }
+
+    function setState(n, msg, markValid) {
+      const wrap = form.querySelector('[data-field="a-' + n + '"]');
+      const err = $("a-" + n + "-err");
+      if (msg) {
+        if (shown[n] !== msg) countErr(F[n]);
+        shown[n] = msg;
+        err.textContent = msg; err.hidden = false;
+        wrap.classList.add("invalid"); wrap.classList.remove("valid");
+        el(n).setAttribute("aria-invalid", "true");
+      } else {
+        shown[n] = "";
+        err.textContent = ""; err.hidden = true;
+        wrap.classList.remove("invalid");
+        el(n).removeAttribute("aria-invalid");
+        wrap.classList.toggle("valid", !!markValid && n !== "agb");
+      }
+    }
+
+    // Passwort: Regeln + Stärke
+    function updatePw() {
+      const v = el("passwort").value;
+      const r = pwRules(v);
+      $("a-rules").querySelectorAll("li").forEach((li) => li.classList.toggle("met", !!r[li.dataset.rule]));
+      let s = (r.len ? 1 : 0) + (r.upper ? 1 : 0) + (r.digit ? 1 : 0) + ((v.length >= 12 || /[^A-Za-z0-9ÄÖÜäöüß]/.test(v)) ? 1 : 0);
+      if (!v) s = 0;
+      const meter = $("a-meter");
+      meter.querySelectorAll("span").forEach((sp, i) => sp.classList.toggle("on", i < s));
+      const lvl = !v ? "" : s <= 1 ? "weak" : s === 2 ? "mid" : "good";
+      meter.dataset.level = lvl;
+      $("a-meter-label").textContent = !v ? "" : s <= 1 ? "Schwach" : s === 2 ? "Mittel" : s === 3 ? "Gut" : "Stark";
+      $("a-meter-label").style.color = lvl === "weak" ? "var(--error)" : lvl === "mid" ? "var(--warn)" : lvl === "good" ? "var(--ok)" : "";
+    }
+
+    // E-Mail-Tippfehler-Vorschlag
+    const DOMAINS = ["gmail.com", "googlemail.com", "gmx.de", "gmx.net", "web.de", "outlook.com", "outlook.de", "hotmail.com", "hotmail.de", "yahoo.com", "yahoo.de", "t-online.de", "icloud.com", "freenet.de", "posteo.de", "live.de", "nordakademie.de"];
+    function lev(a, b) {
+      const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+      for (let j = 1; j <= b.length; j++) d[0][j] = j;
+      for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+        d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      return d[a.length][b.length];
+    }
+    function suggestFor(v) {
+      const m = v.trim().toLowerCase().match(/^([^\s@]+)@([^\s@]+)$/);
+      if (!m || DOMAINS.includes(m[2])) return null;
+      const d = m[2];
+      const bare = DOMAINS.find((x) => x.split(".")[0] === d);
+      if (bare) return m[1] + "@" + bare;
+      let best = null, bd = 3;
+      DOMAINS.forEach((x) => { const k = lev(d, x); if (k < bd) { bd = k; best = x; } });
+      return best ? m[1] + "@" + best : null;
+    }
+    function updateSuggest() {
+      const s = suggestFor(el("email").value);
+      $("a-suggest").hidden = !s;
+      if (s) $("a-suggest-addr").textContent = s;
+    }
+    $("a-suggest-btn").addEventListener("click", () => {
+      el("email").value = $("a-suggest-addr").textContent;
+      $("a-suggest").hidden = true;
+      M.suggestUsed = 1;
+      setState("email", validate("email"), true);
+      el("email").focus();
+    });
+
+    form.addEventListener("focusout", (ev) => {
+      const n = ev.target.id.replace("a-", "");
+      if (!["vorname", "email", "passwort"].includes(n)) return;
+      if (n === "email") updateSuggest();
+      if (ev.target.value === "" && !shown[n]) return;
+      const msg = validate(n);
+      setState(n, msg, !msg);
+    });
+    form.addEventListener("input", (ev) => {
+      const n = ev.target.id.replace("a-", "");
+      if (n === "passwort") updatePw();
+      if (n === "email" && !$("a-suggest").hidden) updateSuggest();
+      if (shown[n] && !validate(n)) setState(n, "", true);
+    });
+    el("agb").addEventListener("change", () => setState("agb", validate("agb"), false));
+
+    $("a-pwToggle").addEventListener("click", function () {
+      const inp = el("passwort"), show = inp.type === "password";
+      inp.type = show ? "text" : "password";
+      this.textContent = show ? "Verbergen" : "Anzeigen";
+      this.setAttribute("aria-pressed", String(show));
+      if (show) M.toggles++;
+    });
+    $("a-agbBtn").addEventListener("click", function () {
+      const panel = $("a-agbPanel"), open = panel.hidden;
+      panel.hidden = !open;
+      this.setAttribute("aria-expanded", String(open));
+      this.textContent = open ? "Nutzungsbedingungen ausblenden" : "Nutzungsbedingungen lesen";
+    });
+    $("a-loginBtn").addEventListener("click", () => { $("a-loginNote").hidden = false; });
+
+    const summary = $("a-summary");
+    function renderSummary(errs) {
+      if (!errs.length) { summary.hidden = true; summary.textContent = ""; return; }
+      summary.textContent = "";
+      const st = document.createElement("strong");
+      st.textContent = errs.length === 1 ? "Bitte prüfe 1 Angabe:" : "Bitte prüfe " + errs.length + " Angaben:";
+      const ul = document.createElement("ul");
+      errs.forEach((n) => {
+        const li = document.createElement("li"), b = document.createElement("button");
+        b.type = "button"; b.textContent = labels[n]; b.addEventListener("click", () => el(n).focus());
+        li.append(b); ul.append(li);
+      });
+      summary.append(st, ul);
+      summary.hidden = false;
+    }
+
+    form.addEventListener("submit", (ev) => {
+      ev.preventDefault();
+      startClock();
+      M.attempts++;
+      const errs = [];
+      Object.keys(F).forEach((n) => { const msg = validate(n); setState(n, msg, !msg); if (msg) errs.push(n); });
+      updatePw();
+      renderSummary(errs);
+      if (errs.length) { el(errs[0]).focus(); return; }
+      $("a-submit").disabled = true;
+      $("a-spinner").hidden = false;
+      $("a-submitLabel").textContent = "Konto wird erstellt …";
+      setTimeout(() => finish(el("vorname").value.trim(), el("email").value.trim()), 900);
+    });
+  }
+
+  // =====================================================================
+  // VARIANTE B – realistisch schlecht
+  // =====================================================================
+  function initB() {
+    // Geburtsdatum-Auswahl befüllen
+    const addOpts = (sel, items) => items.forEach(([v, t]) => { const o = document.createElement("option"); o.value = v; o.textContent = t; sel.append(o); });
+    addOpts($("b-tag"), Array.from({ length: 31 }, (_, i) => [i + 1, i + 1]));
+    addOpts($("b-monat"), ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"].map((m, i) => [i + 1, m]));
+    addOpts($("b-jahr"), Array.from({ length: 107 }, (_, i) => [2026 - i, 2026 - i]));
+
+    // Einfügen in Wiederholungsfeldern blockieren
+    ["b-email2", "b-passwort2"].forEach((id) => {
+      $(id).addEventListener("paste", (ev) => { ev.preventDefault(); M.pasteBlocks++; });
+      $(id).addEventListener("drop", (ev) => { ev.preventDefault(); M.pasteBlocks++; });
+    });
+
+    const v = (id) => $(id).value;
+    const pwOk = (s) => s.length >= 10 && s.length <= 20 && /[A-ZÄÖÜ]/.test(s) && /[a-zäöüß]/.test(s) && /\d/.test(s) && /[^A-Za-z0-9ÄÖÜäöüß]/.test(s);
+    const dateOk = () => {
+      const d = +v("b-tag"), m = +v("b-monat"), y = +v("b-jahr");
+      if (!d || !m || !y) return false;
+      const dt = new Date(y, m - 1, d);
+      return dt.getMonth() === m - 1;
+    };
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+    const checks = [
+      { code: "AN", ids: ["b-anrede"], ok: () => v("b-anrede") !== "" },
+      { code: "VN", ids: ["b-vorname"], ok: () => v("b-vorname").trim().length > 0 },
+      { code: "NN", ids: ["b-nachname"], ok: () => v("b-nachname").trim().length > 0 },
+      { code: "GD", ids: ["b-tag", "b-monat", "b-jahr"], ok: dateOk },
+      { code: "TEL", ids: ["b-telefon"], ok: () => /^\d{6,15}$/.test(v("b-telefon")) },
+      { code: "EM", ids: ["b-email"], ok: () => emailRe.test(v("b-email").trim()) },
+      { code: "EM2", ids: ["b-email2"], ok: () => v("b-email2").trim() !== "" && v("b-email2").trim() === v("b-email").trim() },
+      { code: "PW", ids: ["b-passwort"], ok: () => pwOk(v("b-passwort")) },
+      { code: "PW2", ids: ["b-passwort2"], ok: () => v("b-passwort2") !== "" && v("b-passwort2") === v("b-passwort") },
+      { code: "AGB", ids: ["b-agb"], ok: () => $("b-agb").checked }
+    ];
+
+    form.addEventListener("submit", (ev) => {
+      ev.preventDefault();
+      startClock();
+      M.attempts++;
+      let bad = 0, pwBad = false;
+      checks.forEach((c) => {
+        const ok = c.ok();
+        c.ids.forEach((id) => { $(id).classList.toggle("bad", !ok); if (ok) $(id).removeAttribute("aria-invalid"); else $(id).setAttribute("aria-invalid", "true"); });
+        if (!ok) { bad++; countErr(c.code); if (c.code === "PW") pwBad = true; }
+      });
+      if (bad) {
+        $("b-error").hidden = false;
+        if (pwBad) $("b-pwrules").hidden = false;
+        $("b-passwort").value = "";
+        $("b-passwort2").value = "";
+        $("b-error").focus();
+        $("b-error").scrollIntoView({ block: "center" });
+        return;
+      }
+      $("b-error").hidden = true;
+      $("b-submit").disabled = true;
+      $("b-spinner").hidden = false;
+      $("b-submitLabel").textContent = "Bitte warten …";
+      setTimeout(() => finish(v("b-vorname").trim(), v("b-email").trim()), 1600);
+    });
+  }
 })();
 </script>
-
-</body></html>
