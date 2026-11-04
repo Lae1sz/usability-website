@@ -24,6 +24,19 @@
   --weak-bg: #C9D3CE;
   --weak-fg: #F2F5F3;
   --placeholder-weak: #A9B4AF;
+  --hero-bg: #0F3D33;
+  --hero-fg: #F3FAF6;
+  --hero-muted: #A9CFC2;
+  --sun: #F4C542;
+  --mint: #8EDCC2;
+  --dot: rgba(14, 107, 87, .10);
+  --shadow: 0 2px 6px rgba(15, 61, 51, .08), 0 30px 70px -24px rgba(15, 61, 51, .45);
+  --sky-top: #8FD3C2; --sky-bottom: #F6E7C8; --orb: #F6C453; --glow-op: .95;
+  --cloud: #FFFFFF; --cloud-op: .6; --star-op: 0;
+  --hill1: #A8D8C8; --hill2: #6DB7A0; --hill3: #3A957A; --hill4: #17694F;
+  --road: #F1E4C6; --road-line: #FFFFFF; --tree: #0F5544;
+  --head-top: #0E5A49; --head-bottom: #2F8F74; --head-hill1: #4FA88C; --head-hill2: #7FCBB2;
+  --head-fg: #FFFFFF; --head-muted: #D3EEE5; --note-bg: rgba(255, 255, 255, .8);
   --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --body: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
@@ -34,6 +47,14 @@
     --error: #F7836F; --error-soft: #3A1B17; --warn: #F0B35A; --ok: #52D99A;
     --scrim: rgba(0, 0, 0, .5); --scrim-strong: rgba(0, 0, 0, .75);
     --weak-bg: #33413B; --weak-fg: #6F7F78; --placeholder-weak: #4C5B55;
+    --hero-bg: #12332B; --hero-fg: #E9F5EF; --hero-muted: #8FB8AA; --sun: #E8B931; --mint: #6FCBAD;
+    --dot: rgba(63, 191, 155, .08); --shadow: 0 1px 2px rgba(0,0,0,.3), 0 24px 60px -20px rgba(0,0,0,.7);
+    --sky-top: #071820; --sky-bottom: #173A3C; --orb: #E7E1C4; --glow-op: .6;
+    --cloud: #2B4D52; --cloud-op: .45; --star-op: .85;
+    --hill1: #1E4242; --hill2: #183635; --hill3: #122B29; --hill4: #0C1F1D;
+    --road: #2C4541; --road-line: #5D7A72; --tree: #071815;
+    --head-top: #0D2E29; --head-bottom: #1A4A41; --head-hill1: #24564B; --head-hill2: #2F6A5C;
+    --head-fg: #EAF6F1; --head-muted: #A9CFC2; --note-bg: rgba(18, 28, 25, .82);
     color-scheme: dark;
   }
 }
@@ -43,13 +64,21 @@
   --error: #F7836F; --error-soft: #3A1B17; --warn: #F0B35A; --ok: #52D99A;
   --scrim: rgba(0, 0, 0, .5); --scrim-strong: rgba(0, 0, 0, .75);
   --weak-bg: #33413B; --weak-fg: #6F7F78; --placeholder-weak: #4C5B55;
+  --hero-bg: #12332B; --hero-fg: #E9F5EF; --hero-muted: #8FB8AA; --sun: #E8B931; --mint: #6FCBAD;
+  --dot: rgba(63, 191, 155, .08); --shadow: 0 1px 2px rgba(0,0,0,.3), 0 24px 60px -20px rgba(0,0,0,.7);
+  --sky-top: #071820; --sky-bottom: #173A3C; --orb: #E7E1C4; --glow-op: .6;
+  --cloud: #2B4D52; --cloud-op: .45; --star-op: .85;
+  --hill1: #1E4242; --hill2: #183635; --hill3: #122B29; --hill4: #0C1F1D;
+  --road: #2C4541; --road-line: #5D7A72; --tree: #071815;
+  --head-top: #0D2E29; --head-bottom: #1A4A41; --head-hill1: #24564B; --head-hill2: #2F6A5C;
+  --head-fg: #EAF6F1; --head-muted: #A9CFC2; --note-bg: rgba(18, 28, 25, .82);
   color-scheme: dark;
 }
 
 [hidden] { display: none !important; }
 html, body { min-height: 100%; }
 body {
-  background: var(--bg);
+  background: var(--sky-bottom);
   color: var(--fg);
   font-family: var(--body);
   font-size: 16px;
@@ -58,18 +87,55 @@ body {
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-.wrap { max-width: 440px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+.wrap { position: relative; z-index: 1; max-width: 460px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
 
-.brand { display: flex; align-items: center; gap: 12px; }
+/* ---------- Landschaft im Hintergrund (identisch in A und B) ---------- */
+.scene { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.scene svg { width: 100%; height: 100%; display: block; }
+.s-orb { fill: var(--orb); }
+.s-glow { opacity: var(--glow-op); }
+.s-stars circle { fill: #FFFFFF; opacity: var(--star-op); }
+.s-cloud { fill: var(--cloud); opacity: var(--cloud-op); }
+.s-h1 { fill: var(--hill1); }
+.s-h2 { fill: var(--hill2); }
+.s-h3 { fill: var(--hill3); }
+.s-h4 { fill: var(--hill4); }
+.s-road { fill: none; stroke: var(--road); stroke-linecap: round; }
+.s-roadline { fill: none; stroke: var(--road-line); stroke-dasharray: 16 18; stroke-linecap: round; opacity: .8; }
+.s-tree { fill: var(--tree); }
+.s-bird { fill: none; stroke: var(--tree); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: .55; }
+
+/* ---------- Karte mit illustriertem Kopf ---------- */
+.panel {
+  background: var(--surface);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.panel-head { position: relative; color: var(--head-fg); isolation: isolate; }
+.head-art { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; display: block; }
+.h-orb { fill: var(--orb); }
+.h-glow { opacity: var(--glow-op); }
+.h-hill1 { fill: var(--head-hill1); }
+.h-hill2 { fill: var(--head-hill2); }
+.h-cloud { fill: #FFFFFF; opacity: .14; }
+.h-rider { fill: none; stroke: var(--head-top); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.h-rider .head { fill: var(--head-top); stroke: none; }
+.rider-roll { animation: ride-in 1.4s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes ride-in { from { transform: translateX(-120px); } to { transform: none; } }
+.head-content { padding: 22px 24px 64px; display: flex; flex-direction: column; gap: 14px; }
+.brand { display: flex; align-items: center; gap: 10px; }
 .brand svg { flex: none; }
-.brand-name { font-family: var(--display); font-weight: 700; font-size: 1.35rem; letter-spacing: -0.01em; line-height: 1.1; }
-.brand-sub { color: var(--muted); font-size: 0.875rem; }
+.brand-name { font-family: var(--display); font-weight: 700; font-size: 1.15rem; letter-spacing: -0.01em; line-height: 1.1; }
+.brand-sub { color: var(--head-muted); font-size: 0.8125rem; }
+.head-title { margin: 6px 0 0; font-family: var(--display); font-weight: 700; font-size: 1.85rem; line-height: 1.08; letter-spacing: -0.02em; text-wrap: balance; max-width: 13em; }
+.perks { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.perks li { font-size: 0.8125rem; font-weight: 500; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22); color: var(--head-fg); backdrop-filter: blur(4px); font-variant-numeric: tabular-nums; }
+.perks strong { color: var(--orb); font-weight: 700; }
 
 .card {
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: 28px 24px;
+  padding: 26px 24px 28px;
   display: flex; flex-direction: column; gap: 20px;
 }
 h1 { font-family: var(--display); font-weight: 700; font-size: 1.75rem; line-height: 1.15; letter-spacing: -0.015em; margin: 0; text-wrap: balance; }
@@ -215,7 +281,7 @@ button:focus-visible, select:focus-visible, .check input:focus-visible { outline
 #codeField:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
 .code-row .btn { flex: 1 1 140px; min-height: 48px; }
 
-.demo { margin: 0; text-align: center; font-size: 0.8125rem; color: var(--muted); }
+.demo { margin: 0 auto; text-align: center; font-size: 0.8125rem; color: var(--muted); background: var(--note-bg); border-radius: 12px; padding: 8px 14px; max-width: 420px; }
 
 /* ---------- Cookie-Banner ---------- */
 .overlay {
@@ -271,26 +337,112 @@ button:focus-visible, select:focus-visible, .check input:focus-visible { outline
 
 @media (max-width: 400px) {
   .card { padding: 22px 18px; }
+  .head-content { padding: 20px 18px 60px; }
+  .head-title { font-size: 1.55rem; }
   h1 { font-size: 1.5rem; }
   .vb .row.name { flex-direction: column; }
 }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
   .spinner { animation-duration: 2.4s; }
+  .rider-roll { animation: none; }
 }
 </style>
 
+<div class="scene" aria-hidden="true">
+  <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMax slice">
+    <defs>
+      <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" style="stop-color: var(--sky-top)"/>
+        <stop offset="1" style="stop-color: var(--sky-bottom)"/>
+      </linearGradient>
+      <radialGradient id="sunGlow">
+        <stop offset="0" style="stop-color: var(--orb); stop-opacity: .55"/>
+        <stop offset="1" style="stop-color: var(--orb); stop-opacity: 0"/>
+      </radialGradient>
+    </defs>
+    <rect width="1440" height="900" fill="url(#skyGrad)"/>
+    <g class="s-stars">
+      <circle cx="120" cy="90" r="1.6"/><circle cx="260" cy="160" r="1.2"/><circle cx="410" cy="70" r="1.8"/><circle cx="560" cy="210" r="1.1"/>
+      <circle cx="700" cy="120" r="1.5"/><circle cx="860" cy="60" r="1.2"/><circle cx="960" cy="190" r="1.7"/><circle cx="1210" cy="120" r="1.3"/>
+      <circle cx="1330" cy="60" r="1.6"/><circle cx="1390" cy="230" r="1.1"/><circle cx="80" cy="300" r="1.2"/><circle cx="330" cy="330" r="1.4"/>
+      <circle cx="640" cy="320" r="1.2"/><circle cx="1290" cy="330" r="1.5"/><circle cx="180" cy="230" r="1"/><circle cx="1010" cy="300" r="1.1"/>
+    </g>
+    <circle class="s-glow" cx="1110" cy="250" r="240" fill="url(#sunGlow)"/>
+    <circle class="s-orb" cx="1110" cy="250" r="68"/>
+    <g class="s-cloud" transform="translate(150 150)"><circle cx="30" cy="30" r="22"/><circle cx="62" cy="20" r="30"/><circle cx="98" cy="32" r="20"/><rect x="8" y="30" width="112" height="22" rx="11"/></g>
+    <g class="s-cloud" transform="translate(880 120) scale(.8)"><circle cx="30" cy="30" r="22"/><circle cx="62" cy="20" r="30"/><circle cx="98" cy="32" r="20"/><rect x="8" y="30" width="112" height="22" rx="11"/></g>
+    <g class="s-cloud" transform="translate(1220 380) scale(1.15)"><circle cx="30" cy="30" r="22"/><circle cx="62" cy="20" r="30"/><circle cx="98" cy="32" r="20"/><rect x="8" y="30" width="112" height="22" rx="11"/></g>
+    <g class="s-cloud" transform="translate(40 420) scale(.7)"><circle cx="30" cy="30" r="22"/><circle cx="62" cy="20" r="30"/><circle cx="98" cy="32" r="20"/><rect x="8" y="30" width="112" height="22" rx="11"/></g>
+    <path class="s-bird" d="M300 250 q8 -8 16 0 q8 -8 16 0"/>
+    <path class="s-bird" d="M340 280 q6 -6 12 0 q6 -6 12 0"/>
+    <path class="s-h1" d="M0 560 C160 470 300 470 420 520 C560 580 680 440 860 470 C1020 500 1120 420 1280 450 C1360 465 1410 480 1440 490 V900 H0 Z"/>
+    <path class="s-h2" d="M0 640 C140 580 280 600 400 640 C540 690 700 560 900 600 C1060 632 1200 560 1440 600 V900 H0 Z"/>
+    <path class="s-h3" d="M0 735 C200 680 380 700 560 742 C760 788 980 680 1180 700 C1300 712 1380 728 1440 738 V900 H0 Z"/>
+    <path class="s-road" stroke-width="30" d="M-40 930 C260 850 500 800 700 765 C880 735 1020 718 1200 705"/>
+    <path class="s-roadline" stroke-width="3" d="M-40 930 C260 850 500 800 700 765 C880 735 1020 718 1200 705"/>
+    <g class="s-tree">
+      <rect x="1006" y="660" width="6" height="34" rx="2"/><circle cx="1009" cy="652" r="20"/>
+      <rect x="1052" y="672" width="5" height="26" rx="2"/><circle cx="1054" cy="664" r="15"/>
+      <rect x="222" y="672" width="6" height="36" rx="2"/><circle cx="225" cy="662" r="22"/>
+      <rect x="262" y="684" width="5" height="26" rx="2"/><circle cx="264" cy="676" r="14"/>
+    </g>
+    <path class="s-h4" d="M0 830 C240 785 420 805 640 845 C860 885 1100 795 1440 815 V900 H0 Z"/>
+    <g class="s-tree">
+      <rect x="1290" y="770" width="8" height="46" rx="3"/><circle cx="1294" cy="756" r="30"/>
+      <rect x="1346" y="786" width="6" height="34" rx="2"/><circle cx="1349" cy="776" r="20"/>
+      <rect x="96" y="790" width="7" height="40" rx="3"/><circle cx="99" cy="778" r="26"/>
+    </g>
+  </svg>
+</div>
+
 <main class="wrap" id="app">
-  <header class="brand">
-    <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
-      <rect width="40" height="40" rx="11" fill="var(--accent)"/>
-      <circle cx="20" cy="20" r="10.5" fill="none" stroke="var(--accent-ink)" stroke-width="2.4"/>
-      <circle cx="20" cy="20" r="2.4" fill="var(--accent-ink)"/>
-      <path d="M20 9.5v21M9.5 20h21M12.6 12.6l14.8 14.8M27.4 12.6L12.6 27.4" stroke="var(--accent-ink)" stroke-width="1.3" opacity=".75"/>
+ <div class="panel">
+  <header class="panel-head">
+    <svg class="head-art" viewBox="0 0 460 260" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="headGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" style="stop-color: var(--head-top)"/>
+          <stop offset="1" style="stop-color: var(--head-bottom)"/>
+        </linearGradient>
+        <radialGradient id="headGlow">
+          <stop offset="0" style="stop-color: var(--orb); stop-opacity: .5"/>
+          <stop offset="1" style="stop-color: var(--orb); stop-opacity: 0"/>
+        </radialGradient>
+      </defs>
+      <rect width="460" height="260" fill="url(#headGrad)"/>
+      <circle class="h-glow" cx="396" cy="112" r="70" fill="url(#headGlow)"/>
+      <circle class="h-orb" cx="396" cy="112" r="22"/>
+      <path class="h-hill1" d="M0 214 C70 186 140 188 210 204 C290 222 350 178 460 190 V260 H0 Z"/>
+      <path class="h-hill2" d="M0 236 C90 218 180 224 260 236 C340 248 400 226 460 230 V260 H0 Z"/>
+      <g class="rider-roll">
+        <g class="h-rider" transform="translate(350 236)">
+          <circle cx="0" cy="0" r="9"/><circle cx="30" cy="0" r="9"/>
+          <path d="M0 0 L10 -14 H24 L30 0 M10 -14 L15 0 L0 0 M15 0 L24 -14 M24 -14 L22 -20 M19 -20 H26"/>
+          <path d="M15 0 L13 -8 L11 -26 M11 -26 L22 -19"/>
+          <circle class="head" cx="13" cy="-32" r="5"/>
+        </g>
+      </g>
     </svg>
-    <div>
-      <div class="brand-name">Fahrtwind</div>
-      <div class="brand-sub">Leihräder in deiner Stadt</div>
+    <div class="head-content">
+      <div class="brand">
+        <svg width="36" height="36" viewBox="0 0 40 40" aria-hidden="true">
+          <rect width="40" height="40" rx="11" fill="var(--orb)"/>
+          <circle cx="20" cy="20" r="10.5" fill="none" stroke="var(--head-top)" stroke-width="2.4"/>
+          <circle cx="20" cy="20" r="2.4" fill="var(--head-top)"/>
+          <path d="M20 9.5v21M9.5 20h21M12.6 12.6l14.8 14.8M27.4 12.6L12.6 27.4" stroke="var(--head-top)" stroke-width="1.3" opacity=".75"/>
+        </svg>
+        <div>
+          <div class="brand-name">Fahrtwind</div>
+          <div class="brand-sub">Leihräder in deiner Stadt</div>
+        </div>
+      </div>
+      <p class="head-title">Steig auf, wo du bist.</p>
+      <ul class="perks">
+        <li><strong>1 €</strong> pro Start</li>
+        <li><strong>0,20 €</strong> pro Minute</li>
+        <li><strong>24/7</strong> entsperren</li>
+      </ul>
     </div>
   </header>
 
@@ -432,7 +584,8 @@ button:focus-visible, select:focus-visible, .check input:focus-visible { outline
     </div>
   </section>
 
-  <p class="demo">Prototyp für eine Usability-Studie. Fahrtwind ist eine erfundene App. Eingaben werden weder gespeichert noch versendet, und es werden keine Cookies gesetzt.</p>
+ </div>
+ <p class="demo">Prototyp für eine Usability-Studie. Fahrtwind ist eine erfundene App. Eingaben werden weder gespeichert noch versendet, und es werden keine Cookies gesetzt.</p>
 </main>
 
 <!-- ===================== COOKIE-BANNER A (fair) ===================== -->
