@@ -181,6 +181,8 @@ button:focus-visible, select:focus-visible, .check input:focus-visible { outline
 .vb option { color: var(--fg); }
 .vb input:focus, .vb select:focus { outline: none; border-color: var(--muted); }
 .vb .bad { border-color: var(--error) !important; }
+.vb .check input.bad { outline: 2px solid var(--error); outline-offset: 2px; border-radius: 2px; }
+.vb .check:has(input.bad) label { color: var(--error); }
 .b-error { margin: 0; padding: 8px 10px; background: var(--error-soft); color: var(--error); font-size: 0.875rem; border-radius: 4px; }
 .b-pwrules { margin: -4px 0 0; color: var(--error); font-size: 0.75rem; }
 .b-small { font-size: 0.75rem; color: var(--muted); line-height: 1.4; }
@@ -804,6 +806,15 @@ button:focus-visible, select:focus-visible, .check input:focus-visible { outline
       { code: "PW2", ids: ["b-passwort2"], ok: () => v("b-passwort2") !== "" && v("b-passwort2") === v("b-passwort") },
       { code: "AGB", ids: ["b-agb"], ok: () => $("b-agb").checked }
     ];
+
+    // Rote Markierung verschwindet, sobald das Feld geändert wird; Passwortregeln verschwinden, sobald das Passwort gültig ist
+    form.addEventListener("input", (ev) => {
+      const t = ev.target;
+      if (t.classList.contains("bad")) { t.classList.remove("bad"); t.removeAttribute("aria-invalid"); }
+      if (["b-tag", "b-monat", "b-jahr"].includes(t.id)) ["b-tag", "b-monat", "b-jahr"].forEach((id) => $(id).classList.remove("bad"));
+      if (t.id === "b-passwort" && pwOk(t.value)) $("b-pwrules").hidden = true;
+    });
+    $("b-agb").addEventListener("change", () => $("b-agb").classList.remove("bad"));
 
     form.addEventListener("submit", (ev) => {
       ev.preventDefault();
