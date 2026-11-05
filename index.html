@@ -215,6 +215,8 @@ button:focus-visible, select:focus-visible, .check input:focus-visible { outline
 .btn:active { transform: translateY(1px); }
 .btn[disabled] { cursor: progress; filter: saturate(.7); }
 .btn.secondary { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
+a.btn { text-decoration: none; }
+a.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .spinner { width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid currentColor; border-right-color: transparent; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -573,7 +575,12 @@ button:focus-visible, select:focus-visible, .check input:focus-visible { outline
     </div>
     <h1 id="doneTitle" tabindex="-1">Willkommen!</h1>
     <p class="done-text" id="doneText"></p>
-    <div class="metrics" aria-labelledby="metricsTitle">
+    <div class="metrics" id="redirectBlock" aria-labelledby="redirectTitle" hidden>
+      <h2 id="redirectTitle">Letzter Schritt</h2>
+      <p class="code-lead" aria-live="polite">Gleich geht es automatisch mit der Umfrage weiter.</p>
+      <a class="btn" id="continueLink" href="#">Weiter zur Umfrage</a>
+    </div>
+    <div class="metrics" id="codeBlock" aria-labelledby="metricsTitle">
       <h2 id="metricsTitle">Letzter Schritt</h2>
       <p class="code-lead">Kopiere diesen Code, kehre zur Umfrage zurück und füge ihn dort ein. Danach kannst du diesen Tab schließen.</p>
       <div class="code-row">
@@ -668,7 +675,18 @@ button:focus-visible, select:focus-visible, .check input:focus-visible { outline
 (function () {
   "use strict";
   const $ = (id) => document.getElementById(id);
-  const isB = /^#variante-b$/i.test(location.hash);
+  // ================================================================
+  // LINK ZU TEIL 2 DER UMFRAGE (Qualtrics, anonymer Link)
+  // Hier zwischen die Anführungszeichen einfügen. Leer lassen = am Ende
+  // wird wie bisher ein Code zum Kopieren angezeigt.
+  const UMFRAGE_TEIL2 = "";
+  // ================================================================
+
+  // Variante: ?v=a / ?v=b (für Qualtrics) oder #variante-b (für Tests vor Ort)
+  const params = new URLSearchParams(location.search);
+  const vParam = (params.get("v") || "").toLowerCase();
+  const isB = vParam === "b" || (vParam !== "a" && /^#variante-b$/i.test(location.hash));
+  const rid = (params.get("rid") || "").slice(0, 64);
 
   // ---------- Messwerte ----------
   const M = {
@@ -731,14 +749,37 @@ button:focus-visible, select:focus-visible, .check input:focus-visible { outline
     Object.keys(M.byField).forEach((k) => { if (M.byField[k] > topN) { top = k; topN = M.byField[k]; } });
 
     // Code: Variante-FormularSek-BannerSek-CookieWahl-OptionaleCookies-Absendeversuche-Fehler-HäufigstesFehlerfeld-EinfügenBlockiert-PasswortEingeblendet-EmailVorschlagGenutzt
-    $("codeField").value = [
-      isB ? "B" : "A",
-      Math.round(ms / 1000),
-      Math.round(M.bannerMs / 1000),
-      M.cookie, M.optIn,
-      M.attempts, M.errors, top,
-      M.pasteBlocks, M.toggles, M.suggestUsed
-    ].join("-");
+    const fields = {
+      variante: isB ? "B" : "A",
+      dauer: Math.round(ms / 1000),
+      banner: Math.round(M.bannerMs / 1000),
+      cookie: M.cookie,
+      optin: M.optIn,
+      versuche: M.attempts,
+      fehler: M.errors,
+      fehlerfeld: top,
+      einfuegen: M.pasteBlocks,
+      pwanzeigen: M.toggles,
+      vorschlag: M.suggestUsed
+    };
+    const code = Object.values(fields).join("-");
+    $("codeField").value = code;
+
+    let target = null;
+    if (UMFRAGE_TEIL2) {
+      try {
+        target = new URL(UMFRAGE_TEIL2);
+        target.searchParams.set("rid", rid);
+        target.searchParams.set("code", code);
+        Object.keys(fields).forEach((k) => target.searchParams.set(k, fields[k]));
+      } catch (e) { target = null; }
+    }
+    if (target) {
+      $("codeBlock").hidden = true;
+      $("redirectBlock").hidden = false;
+      $("continueLink").href = target.toString();
+      setTimeout(() => { try { location.assign(target.toString()); } catch (e) {} }, 2500);
+    }
 
     view.hidden = true;
     $("doneView").hidden = false;
